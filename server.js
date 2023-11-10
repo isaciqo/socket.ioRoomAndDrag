@@ -19,21 +19,27 @@ io.on('connection', (socket) => {
     // Ouvinte de evento para mensagens de chat
     socket.on('chat message', (room, message) => {
         // Envia a mensagem para todos os usuários na sala especificada
-        console.log('teste');
         console.log('a mensagem foi', message);
         io.to(room).emit('chat message', message);
         
     });
 
-    // socket.on("object move", (room, data) => {
-    //     console.log('estou recebendo informação de move');
-    //     io.to(room).emit("objectMoved", data);
-    //     console.log('estou recebendo enviei informação para objectMoved');
-    // });
+    socket.on('Create box', (room, message) => {
+        // Envia a mensagem para todos os usuários na sala especificada
+        console.log('a mensagem foi', message);
+        io.to(room).emit('Create box', message);
+        
+    });
 
     socket.on('object move', (room, coordinates) => {
         console.log('estou recebendo informação de move');
         io.to(room).emit('object move', coordinates.left, coordinates.top);
+    });
+
+    socket.on('any object move', (room, coordinates) => {
+        console.log('estou recebendo informação de move');
+        io.to(room).emit('any object move', coordinates.left, coordinates.top, coordinates.activeElement);
+        console.log('envio de informações servidor', coordinates.left, coordinates.top, coordinates.activeElement);
     });
 
     // Ouvinte de evento para desconexão de um usuário
