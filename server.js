@@ -35,11 +35,6 @@ io.on('connection', (socket) => {
         io.to(room).emit('delete object', elementID);
     });
 
-    socket.on('object move', (room, coordinates) => {
-        console.log('estou recebendo informação de move');
-        io.to(room).emit('object move', coordinates.left, coordinates.top);
-    });
-
     socket.on('any object move', (room, coordinates) => {
         console.log('estou recebendo informação de any object move1');
         console.log('envio de informações servidor', coordinates.left, coordinates.top, coordinates.elementID);

@@ -40,10 +40,10 @@ sendButton.addEventListener('click', () => {
 
 
 
+// emite o evento de criar uma caixa
 criarQuadradoBtn.addEventListener('click', () => {
     const color = 'azul';
     socket.emit('Create box', roomNameInput.value, color);
-    console.log('botão de criar');
 });
 
 
@@ -54,20 +54,41 @@ socket.on('chat message', (message) => {
     messages.appendChild(messageElement);
 });
 
+
+// escutando se o objeto mudou
+socket.on("any object move", (left, top, elementID) => {
+    const elementoMovido = document.getElementById(elementID);
+    console.log("any object move", left, top, elementID);
+    elementoMovido.style.left = left;
+    elementoMovido.style.top = top;
+});
+
+// Adicione um ouvinte de evento para receber o comando de exclusão
+socket.on('delete object', (elementID) => {
+    const elementoDeletado = document.getElementById(elementID);
+    if (elementoDeletado) {
+        elementoDeletado.remove();
+    }
+});
+
+// Define um ouvinte de evento para criar caixas
 socket.on('Create box', (color) => {
     const novoQuadrado = document.createElement('div');
     novoQuadrado.classList.add('quadrado');
     novoQuadrado.id = `quadrado${contadorQuadrados}`;
 
+    //cria o botão de excluir a caixa
     criarBotaoExcluir(novoQuadrado);
 
     contadorQuadrados++;
-    console.log(color);
+
+    //parte de reesstruturar o tamanho
     const resizeHandle = document.createElement('div');
     resizeHandle.classList.add('resize-handle');
-
     novoQuadrado.appendChild(resizeHandle);
 
+
+    //log para confirmar qual quadrado foi clicado
     novoQuadrado.addEventListener('click', () => {
         console.log('ID do quadrado clicado: ' + novoQuadrado.id);
     });
@@ -92,56 +113,7 @@ function criarBotaoExcluir(objeto) {
 }
 
 
-// código do objeto
-// reconhendo que o objeto é objeto definido no html
-const objeto = document.getElementById("objeto");
-
-
-
-
-// Verifica se o evento ocorreu no objeto
-objeto.addEventListener("mousedown", function(event) {
-    if (event.target === objeto) { 
-        isDragging = true;
-        offsetX = event.clientX - objeto.getBoundingClientRect().left;
-        offsetY = event.clientY - objeto.getBoundingClientRect().top;
-    }
-});
-
-// ajustar local do objeto e enviar a informação 
-objeto.addEventListener("mousemove", function(event) {
-    if (isDragging) {
-        const x = event.clientX - offsetX;
-        const y = event.clientY - offsetY;
-        objeto.style.left = x + "px";
-        objeto.style.top = y + "px";
-        socket.emit('object move', roomNameInput.value, {
-            left: objeto.style.left,
-            top: objeto.style.top
-        });
-        console.log('estou enviando informação para move');
-        console.log('isMoving');
-    }
-});
-
-// soltar o objeto
-objeto.addEventListener("mouseup", function() {
-    isDragging = false;
-});
-
-// escutando se o objeto mudou
-socket.on("object move", (left, top) => {
-    objeto.style.left = left;
-    objeto.style.top = top;
-    console.log('estou recebendo informação de objectMoved');
-});
-
-
-
-
-// Define um ouvinte de evento para criar uma box
-
-
+// código de any objeto
 
 function tornarArrastavelERedimensionavel(elemento) {
     elemento.addEventListener('mousedown', (e) => {
@@ -169,8 +141,6 @@ function tornarArrastavelERedimensionavel(elemento) {
             activeElement.style.left = e.clientX - offsetX + 'px';
             activeElement.style.top = e.clientY - offsetY + 'px';
 
-            console.log('local enviado')
-            console.log('envio de informações', activeElement.style.left, activeElement.style.top, activeElement.id);
             socket.emit('any object move', roomNameInput.value, {
                 left: activeElement.style.left,
                 top:activeElement.style.top,
@@ -196,21 +166,5 @@ function tornarArrastavelERedimensionavel(elemento) {
         isDragging = false;
         isResizing = false;
         activeElement = null;
-    });
-
-    // escutando se o objeto mudou
-    socket.on("any object move", (left, top, elementID) => {
-        const elementoMovido = document.getElementById(elementID);
-        console.log("any object move", left, top, elementID);
-        elementoMovido.style.left = left;
-        elementoMovido.style.top = top;
-    });
-
-    // Adicione um ouvinte de evento para receber o comando de exclusão
-    socket.on('delete object', (elementID) => {
-        const elementoDeletado = document.getElementById(elementID);
-        if (elementoDeletado) {
-            elementoDeletado.remove();
-        }
     });
 }
