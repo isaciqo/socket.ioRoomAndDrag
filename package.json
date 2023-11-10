@@ -1,0 +1,15 @@
+{
+  "name": "socket-io-object-drag",
+  "version": "1.0.0",
+  "description": "Um exemplo de aplicação com Socket.IO para arrastar um objeto em tempo real.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Seu Nome",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.3",
+    "socket.io": "^4.0.1"
+  }
+}

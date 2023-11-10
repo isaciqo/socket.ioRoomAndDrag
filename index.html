@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat em Sala</title>
+    <!-- Inclui a biblioteca do Socket.IO -->
+    <style>
+        #objeto {
+            width: 100px;
+            height: 100px;
+            background-color: blue;
+            position: absolute;
+        }
+        #objeto {
+            font-size: 100px;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div id="chat">
+        <h1>Crie ou entre em uma sala:</h1>
+        <!-- Campo de entrada para o nome da sala -->
+        <input id="roomName" type="text" placeholder="Nome da Sala">
+        <button id="joinCreateRoom">Entrar na Sala ou Criar</button>
+        <div id="messages"></div>
+        <input id="message" type="text" placeholder="Digite sua mensagem">
+        <button id="send">Enviar</button>
+    </div>
+    <div id="objeto" draggable="true"></div>
+
+    <!-- Inclui o arquivo JavaScript do cliente -->
+    <script src="/client.js"></script>
+</body>
+</html>

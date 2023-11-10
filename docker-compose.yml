@@ -1,0 +1,17 @@
+version: '3'
+services:
+  app:
+    image: node:18 # Imagem base do Node.js
+    working_dir: /app
+    volumes:
+      - ./:/app # Mapeia todo o diretório do projeto para o contêiner
+    command:
+      sh -c "npm install && npm run start" # Instalação de dependências e iniciação do aplicativo
+    ports:
+      - "3000:3000" # Mapeamento de porta do host para o contêiner
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf

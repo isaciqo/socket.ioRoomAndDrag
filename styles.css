@@ -1,0 +1,20 @@
+.quadrado {
+    width: 100px;
+    height: 100px;
+    background-color: red;
+    display: inline-block;
+    position: absolute;
+    cursor: move;
+    resize: both;
+    overflow: hidden;
+}
+
+.resize-handle {
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    cursor: se-resize;
+}
