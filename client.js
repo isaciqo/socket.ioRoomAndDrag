@@ -42,8 +42,8 @@ sendButton.addEventListener('click', () => {
 
 // emite o evento de criar uma caixa
 criarQuadradoBtn.addEventListener('click', () => {
-    const color = 'azul';
-    socket.emit('Create box', roomNameInput.value, color);
+    contadorQuadrados++;
+    socket.emit('Create box', roomNameInput.value, contadorQuadrados);
 });
 
 
@@ -54,6 +54,40 @@ socket.on('chat message', (message) => {
     messages.appendChild(messageElement);
 });
 
+// Define um ouvinte de evento para receber mensagens do servidor e exibir o console.log
+socket.on('console.log', (initialMessages, initialObjects) => {
+    // Exibe as mensagens iniciais
+
+    console.log('array mensagens ', initialMessages)
+    console.log('array objects ', initialObjects)
+    initialMessages.forEach((message) => {
+        const messageElement = document.createElement('p');
+        messageElement.textContent = message;
+        messages.appendChild(messageElement);
+    });
+
+    // Cria os objetos iniciais
+    initialObjects.forEach(( elementID ) => {
+        contadorQuadrados = elementID;
+        const novoQuadrado = document.createElement('div');
+        novoQuadrado.classList.add('quadrado');
+        novoQuadrado.id = contadorQuadrados;
+
+        criarBotaoExcluir(novoQuadrado);  // Adiciona o botão "X" para excluir
+
+        const resizeHandle = document.createElement('div');
+        resizeHandle.classList.add('resize-handle');
+        novoQuadrado.appendChild(resizeHandle);
+
+        novoQuadrado.addEventListener('click', () => {
+            console.log('ID do quadrado clicado: ' + novoQuadrado.id);
+        });
+
+        quadradoContainer.appendChild(novoQuadrado);
+
+        tornarArrastavelERedimensionavel(novoQuadrado);
+    });
+});
 
 // escutando se o objeto mudou
 socket.on("any object move", (left, top, elementID) => {
@@ -72,15 +106,16 @@ socket.on('delete object', (elementID) => {
 });
 
 // Define um ouvinte de evento para criar caixas
-socket.on('Create box', (color) => {
+socket.on('Create box', (quadradoID) => {
     const novoQuadrado = document.createElement('div');
     novoQuadrado.classList.add('quadrado');
-    novoQuadrado.id = `quadrado${contadorQuadrados}`;
+    contadorQuadrados = quadradoID
+    novoQuadrado.id = contadorQuadrados;
 
     //cria o botão de excluir a caixa
     criarBotaoExcluir(novoQuadrado);
 
-    contadorQuadrados++;
+    
 
     //parte de reesstruturar o tamanho
     const resizeHandle = document.createElement('div');
@@ -166,5 +201,40 @@ function tornarArrastavelERedimensionavel(elemento) {
         isDragging = false;
         isResizing = false;
         activeElement = null;
+    });
+
+
+
+    // código para atualizar tudo
+    socket.on('initial state', (initialMessages, initialObjects) => {
+        // Exibe as mensagens iniciais
+
+        console.log('array mensagens ', initialMessages)
+        initialMessages.forEach((message) => {
+            const messageElement = document.createElement('p');
+            messageElement.textContent = message;
+            messages.appendChild(messageElement);
+        });
+    
+        // Cria os objetos iniciais
+        initialObjects.forEach(({ color, elementID }) => {
+            const novoQuadrado = document.createElement('div');
+            novoQuadrado.classList.add('quadrado');
+            novoQuadrado.id = elementID;
+    
+            criarBotaoExcluir(novoQuadrado);  // Adiciona o botão "X" para excluir
+    
+            const resizeHandle = document.createElement('div');
+            resizeHandle.classList.add('resize-handle');
+            novoQuadrado.appendChild(resizeHandle);
+    
+            novoQuadrado.addEventListener('click', () => {
+                console.log('ID do quadrado clicado: ' + novoQuadrado.id);
+            });
+    
+            quadradoContainer.appendChild(novoQuadrado);
+    
+            tornarObjetoMovivel(novoQuadrado);
+        });
     });
 }
