@@ -31,15 +31,19 @@ io.on('connection', (socket) => {
         
     });
 
+    socket.on('delete object', (room, elementID) => {
+        io.to(room).emit('delete object', elementID);
+    });
+
     socket.on('object move', (room, coordinates) => {
         console.log('estou recebendo informação de move');
         io.to(room).emit('object move', coordinates.left, coordinates.top);
     });
 
     socket.on('any object move', (room, coordinates) => {
-        console.log('estou recebendo informação de move');
-        io.to(room).emit('any object move', coordinates.left, coordinates.top, coordinates.activeElement);
-        console.log('envio de informações servidor', coordinates.left, coordinates.top, coordinates.activeElement);
+        console.log('estou recebendo informação de any object move1');
+        console.log('envio de informações servidor', coordinates.left, coordinates.top, coordinates.elementID);
+        io.to(room).emit('any object move', coordinates.left, coordinates.top, coordinates.elementID);
     });
 
     // Ouvinte de evento para desconexão de um usuário

@@ -58,6 +58,9 @@ socket.on('Create box', (color) => {
     const novoQuadrado = document.createElement('div');
     novoQuadrado.classList.add('quadrado');
     novoQuadrado.id = `quadrado${contadorQuadrados}`;
+
+    criarBotaoExcluir(novoQuadrado);
+
     contadorQuadrados++;
     console.log(color);
     const resizeHandle = document.createElement('div');
@@ -73,6 +76,22 @@ socket.on('Create box', (color) => {
 
     tornarArrastavelERedimensionavel(novoQuadrado);
 });
+
+
+function criarBotaoExcluir(objeto) {
+    const botaoExcluir = document.createElement('button');
+    botaoExcluir.innerText = 'X';
+    botaoExcluir.classList.add('botao-excluir');
+
+    botaoExcluir.addEventListener('click', () => {
+        // Emite o evento "delete object" para o servidor
+        socket.emit('delete object', roomNameInput.value, objeto.id);
+    });
+
+    objeto.appendChild(botaoExcluir);
+}
+
+
 // código do objeto
 // reconhendo que o objeto é objeto definido no html
 const objeto = document.getElementById("objeto");
@@ -149,13 +168,15 @@ function tornarArrastavelERedimensionavel(elemento) {
         if (isDragging) {
             activeElement.style.left = e.clientX - offsetX + 'px';
             activeElement.style.top = e.clientY - offsetY + 'px';
+
+            console.log('local enviado')
+            console.log('envio de informações', activeElement.style.left, activeElement.style.top, activeElement.id);
             socket.emit('any object move', roomNameInput.value, {
                 left: activeElement.style.left,
                 top:activeElement.style.top,
-                activeElement
+                elementID: activeElement.id,
             });
-            console.log('local enviado')
-            console.log('envio de informações', activeElement.style.left, activeElement.style.top, activeElement);
+            
         } else if (isResizing) {
             const newWidth = initialWidth + (e.clientX - activeElement.getBoundingClientRect().left) - (activeElement.getBoundingClientRect().left);
             const newHeight = initialHeight + (e.clientY - activeElement.getBoundingClientRect().top) - (activeElement.getBoundingClientRect().top);
@@ -178,9 +199,18 @@ function tornarArrastavelERedimensionavel(elemento) {
     });
 
     // escutando se o objeto mudou
-    socket.on("any object move", (left, top, activeElement) => {
-        console.log("any object move", left, top, activeElement);
-        activeElement.style.left = left;
-        activeElement.style.top = top;
+    socket.on("any object move", (left, top, elementID) => {
+        const elementoMovido = document.getElementById(elementID);
+        console.log("any object move", left, top, elementID);
+        elementoMovido.style.left = left;
+        elementoMovido.style.top = top;
+    });
+
+    // Adicione um ouvinte de evento para receber o comando de exclusão
+    socket.on('delete object', (elementID) => {
+        const elementoDeletado = document.getElementById(elementID);
+        if (elementoDeletado) {
+            elementoDeletado.remove();
+        }
     });
 }
