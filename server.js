@@ -40,9 +40,20 @@ io.on('connection', (socket) => {
         rooms[room] = rooms[room] || { messages: [], objects: [] };
         io.to(room).emit('Create box', quadradoID);
 
-        rooms[room].objects.push(quadradoID);
+        rooms[room].objects.push({ elementID: quadradoID, position: { x: 0, y: 0 } });
         console.log('o objeto foi array', rooms[room].objects );
     });
+
+    socket.on('save estate', (room, objectInformation) => {
+
+        rooms[room].objects = rooms[room].objects.map(object => 
+            object.elementID === parseInt(objectInformation.elementID) ? { ...object, position: { x: objectInformation.left, y: objectInformation.top } } : object
+          );
+       
+        console.log('rooms[room].objects', rooms[room].objects);
+       
+   });
+
 
     socket.on('delete object', (room, elementID) => {
 
@@ -66,6 +77,8 @@ io.on('connection', (socket) => {
             roomObjects[objectIndex].left = coordinates.left;
             roomObjects[objectIndex].top = coordinates.top;
         }
+
+        console.log(roomObjects[objectIndex])
     });
 
     // Ouvinte de evento para desconexão de um usuário

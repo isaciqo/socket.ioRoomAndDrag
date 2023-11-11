@@ -58,21 +58,20 @@ socket.on('chat message', (message) => {
 socket.on('console.log', (initialMessages, initialObjects) => {
     // Exibe as mensagens iniciais
 
-    console.log('array mensagens ', initialMessages)
-    console.log('array objects ', initialObjects)
     initialMessages.forEach((message) => {
         const messageElement = document.createElement('p');
         messageElement.textContent = message;
         messages.appendChild(messageElement);
     });
-
+    console.log('initialObjects', initialObjects)
     // Cria os objetos iniciais
-    initialObjects.forEach(( elementID ) => {
-        contadorQuadrados = elementID;
+    initialObjects.forEach(( object ) => {
+        contadorQuadrados = object.elementID;
         const novoQuadrado = document.createElement('div');
         novoQuadrado.classList.add('quadrado');
         novoQuadrado.id = contadorQuadrados;
-
+        novoQuadrado.style.left = object.position.x;
+        novoQuadrado.style.top = object.position.y;
         criarBotaoExcluir(novoQuadrado);  // Adiciona o botão "X" para excluir
 
         const resizeHandle = document.createElement('div');
@@ -131,6 +130,7 @@ socket.on('Create box', (quadradoID) => {
     quadradoContainer.appendChild(novoQuadrado);
 
     tornarArrastavelERedimensionavel(novoQuadrado);
+    activeElement = null;
 });
 
 
@@ -172,6 +172,8 @@ function tornarArrastavelERedimensionavel(elemento) {
     });
 
     document.addEventListener('mousemove', (e) => {
+        console.log('elemento', elemento )
+        console.log('isDragging', isDragging )
         if (isDragging) {
             activeElement.style.left = e.clientX - offsetX + 'px';
             activeElement.style.top = e.clientY - offsetY + 'px';
@@ -192,9 +194,20 @@ function tornarArrastavelERedimensionavel(elemento) {
     });
 
     document.addEventListener('mouseup', () => {
+        console.log('isDragging', isDragging )
+        if (isDragging = true){
+            socket.emit('save estate', roomNameInput.value, {
+                left: activeElement.style.left,
+                top:activeElement.style.top,
+                elementID: activeElement.id,
+            });
+        }
+        
         isDragging = false;
         isResizing = false;
         activeElement = null;
+
+
     });
 
     document.addEventListener('mouseleave', () => {
@@ -209,7 +222,6 @@ function tornarArrastavelERedimensionavel(elemento) {
     socket.on('initial state', (initialMessages, initialObjects) => {
         // Exibe as mensagens iniciais
 
-        console.log('array mensagens ', initialMessages)
         initialMessages.forEach((message) => {
             const messageElement = document.createElement('p');
             messageElement.textContent = message;
@@ -221,7 +233,9 @@ function tornarArrastavelERedimensionavel(elemento) {
             const novoQuadrado = document.createElement('div');
             novoQuadrado.classList.add('quadrado');
             novoQuadrado.id = elementID;
-    
+            novoQuadrado.style.left = left;
+            novoQuadrado.style.top = top;
+
             criarBotaoExcluir(novoQuadrado);  // Adiciona o botão "X" para excluir
     
             const resizeHandle = document.createElement('div');
