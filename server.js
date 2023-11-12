@@ -67,18 +67,9 @@ io.on('connection', (socket) => {
         
     });
 
-    socket.on('any object move', (room, coordinates) => {
-        io.to(room).emit('any object move', coordinates.left, coordinates.top, coordinates.elementID);
+    socket.on('any object move', (room, coordinates, userID) => {
+        io.to(room).except(userID).emit('any object move', coordinates.left, coordinates.top, coordinates.elementID);
 
-        // Atualiza a posição do objeto na lista de objetos da sala
-        const roomObjects = rooms[room].objects;
-        const objectIndex = roomObjects.findIndex(obj => obj.elementID === coordinates.elementID);
-        if (objectIndex !== -1) {
-            roomObjects[objectIndex].left = coordinates.left;
-            roomObjects[objectIndex].top = coordinates.top;
-        }
-
-        console.log(roomObjects[objectIndex])
     });
 
     // Ouvinte de evento para desconexão de um usuário

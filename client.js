@@ -57,13 +57,11 @@ socket.on('chat message', (message) => {
 // Define um ouvinte de evento para receber mensagens do servidor e exibir o console.log
 socket.on('console.log', (initialMessages, initialObjects) => {
     // Exibe as mensagens iniciais
-
     initialMessages.forEach((message) => {
         const messageElement = document.createElement('p');
         messageElement.textContent = message;
         messages.appendChild(messageElement);
     });
-    console.log('initialObjects', initialObjects)
     // Cria os objetos iniciais
     initialObjects.forEach(( object ) => {
         contadorQuadrados = object.elementID;
@@ -73,7 +71,6 @@ socket.on('console.log', (initialMessages, initialObjects) => {
         novoQuadrado.style.left = object.position.x;
         novoQuadrado.style.top = object.position.y;
         criarBotaoExcluir(novoQuadrado);  // Adiciona o botão "X" para excluir
-
         const resizeHandle = document.createElement('div');
         resizeHandle.classList.add('resize-handle');
         novoQuadrado.appendChild(resizeHandle);
@@ -83,7 +80,6 @@ socket.on('console.log', (initialMessages, initialObjects) => {
         });
 
         quadradoContainer.appendChild(novoQuadrado);
-
         tornarArrastavelERedimensionavel(novoQuadrado);
     });
 });
@@ -91,7 +87,6 @@ socket.on('console.log', (initialMessages, initialObjects) => {
 // escutando se o objeto mudou
 socket.on("any object move", (left, top, elementID) => {
     const elementoMovido = document.getElementById(elementID);
-    console.log("any object move", left, top, elementID);
     elementoMovido.style.left = left;
     elementoMovido.style.top = top;
 });
@@ -172,8 +167,7 @@ function tornarArrastavelERedimensionavel(elemento) {
     });
 
     document.addEventListener('mousemove', (e) => {
-        console.log('elemento', elemento )
-        console.log('isDragging', isDragging )
+
         if (isDragging) {
             activeElement.style.left = e.clientX - offsetX + 'px';
             activeElement.style.top = e.clientY - offsetY + 'px';
@@ -182,8 +176,7 @@ function tornarArrastavelERedimensionavel(elemento) {
                 left: activeElement.style.left,
                 top:activeElement.style.top,
                 elementID: activeElement.id,
-            });
-            
+            }, socket.id);
         } else if (isResizing) {
             const newWidth = initialWidth + (e.clientX - activeElement.getBoundingClientRect().left) - (activeElement.getBoundingClientRect().left);
             const newHeight = initialHeight + (e.clientY - activeElement.getBoundingClientRect().top) - (activeElement.getBoundingClientRect().top);
@@ -194,15 +187,13 @@ function tornarArrastavelERedimensionavel(elemento) {
     });
 
     document.addEventListener('mouseup', () => {
-        console.log('isDragging', isDragging )
-        if (isDragging = true){
+        if (isDragging == true){
             socket.emit('save estate', roomNameInput.value, {
                 left: activeElement.style.left,
                 top:activeElement.style.top,
                 elementID: activeElement.id,
             });
         }
-        
         isDragging = false;
         isResizing = false;
         activeElement = null;
@@ -248,7 +239,7 @@ function tornarArrastavelERedimensionavel(elemento) {
     
             quadradoContainer.appendChild(novoQuadrado);
     
-            tornarObjetoMovivel(novoQuadrado);
+            tornarArrastavelERedimensionavel(novoQuadrado);
         });
     });
 }
