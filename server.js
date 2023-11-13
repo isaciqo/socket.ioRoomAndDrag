@@ -31,7 +31,6 @@ io.on('connection', (socket) => {
         
         // Adiciona a mensagem à lista de mensagens da sala
         rooms[room].messages.push(message);
-        console.log('a mensagem foi array', rooms[room].messages );
     });
 
     socket.on('Create box', (room, quadradoID) => {
@@ -41,7 +40,6 @@ io.on('connection', (socket) => {
         io.to(room).emit('Create box', quadradoID);
 
         rooms[room].objects.push({ elementID: quadradoID, position: { x: 0, y: 0 } });
-        console.log('o objeto foi array', rooms[room].objects );
     });
 
     socket.on('save estate', (room, objectInformation) => {
@@ -50,7 +48,6 @@ io.on('connection', (socket) => {
             object.elementID === parseInt(objectInformation.elementID) ? { ...object, position: { x: objectInformation.left, y: objectInformation.top } } : object
           );
        
-        console.log('rooms[room].objects', rooms[room].objects);
        
    });
 
@@ -61,7 +58,6 @@ io.on('connection', (socket) => {
         rooms[room].objects.splice(rooms[room].objects.findIndex(item => item.elementID === parseInt(elementID)), 1);
         
 
-        console.log("depois de excluir de excluir", rooms[room].objects )
 
         io.to(room).emit('delete object', elementID);
         

@@ -4,7 +4,7 @@
   "description": "Um exemplo de aplicação com Socket.IO para arrastar um objeto em tempo real.",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "node server.js"
   },
   "author": "Seu Nome",
   "license": "MIT",
