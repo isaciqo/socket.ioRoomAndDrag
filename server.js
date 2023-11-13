@@ -56,9 +56,9 @@ io.on('connection', (socket) => {
 
 
     socket.on('delete object', (room, elementID) => {
-
         // Remove o objeto da lista de objetos da sala
-        rooms[room].objects.splice(rooms[room].objects.indexOf(parseInt(elementID)), 1);
+
+        rooms[room].objects.splice(rooms[room].objects.findIndex(item => item.elementID === parseInt(elementID)), 1);
         
 
         console.log("depois de excluir de excluir", rooms[room].objects )
