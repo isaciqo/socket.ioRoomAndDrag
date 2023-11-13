@@ -3,17 +3,7 @@
 <head>
     <title>Chat em Sala</title>
     <!-- Inclui a biblioteca do Socket.IO -->
-    <style>
-        #objeto {
-            width: 100px;
-            height: 100px;
-            background-color: blue;
-            position: absolute;
-        }
-        #objeto {
-            font-size: 100px;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="styles.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
@@ -26,8 +16,9 @@
         <input id="message" type="text" placeholder="Digite sua mensagem">
         <button id="send">Enviar</button>
     </div>
-    <div id="objeto" draggable="true"></div>
-
+    <button id="criarQuadrado">Criar Quadrado</button>
+    <div id="quadradoContainer"></div>
+    
     <!-- Inclui o arquivo JavaScript do cliente -->
     <script src="/client.js"></script>
 </body>

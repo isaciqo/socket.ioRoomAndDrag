@@ -3,8 +3,12 @@
 const socket = io();
 const roomNameInput = document.getElementById('roomName');
 const joinCreateRoomButton = document.getElementById('joinCreateRoom');
-let isDragging;
-let offsetX, offsetY;
+const criarQuadradoBtn = document.getElementById('criarQuadrado');
+const quadradoContainer = document.getElementById('quadradoContainer');
+let contadorQuadrados = 0;
+let isDragging = false;
+let isResizing = false;
+let activeElement, offsetX, offsetY, initialWidth, initialHeight;
 
 // Define um ouvinte de evento para o botão "Entrar na Sala ou Criar"
 joinCreateRoomButton.addEventListener('click', () => {
@@ -34,6 +38,15 @@ sendButton.addEventListener('click', () => {
     }
 });
 
+
+
+// emite o evento de criar uma caixa
+criarQuadradoBtn.addEventListener('click', () => {
+    contadorQuadrados++;
+    socket.emit('Create box', roomNameInput.value, contadorQuadrados);
+});
+
+
 // Define um ouvinte de evento para receber mensagens do servidor e exibi-las
 socket.on('chat message', (message) => {
     const messageElement = document.createElement('p');
@@ -41,46 +54,192 @@ socket.on('chat message', (message) => {
     messages.appendChild(messageElement);
 });
 
-// código do objeto
-// reconhendo que o objeto é objeto definido no html
-const objeto = document.getElementById("objeto");
+// Define um ouvinte de evento para receber mensagens do servidor e exibir o console.log
+socket.on('console.log', (initialMessages, initialObjects) => {
+    // Exibe as mensagens iniciais
+    initialMessages.forEach((message) => {
+        const messageElement = document.createElement('p');
+        messageElement.textContent = message;
+        messages.appendChild(messageElement);
+    });
+    // Cria os objetos iniciais
+    initialObjects.forEach(( object ) => {
+        contadorQuadrados = object.elementID;
+        const novoQuadrado = document.createElement('div');
+        novoQuadrado.classList.add('quadrado');
+        novoQuadrado.id = contadorQuadrados;
+        novoQuadrado.style.left = object.position.x;
+        novoQuadrado.style.top = object.position.y;
+        criarBotaoExcluir(novoQuadrado);  // Adiciona o botão "X" para excluir
+        const resizeHandle = document.createElement('div');
+        resizeHandle.classList.add('resize-handle');
+        novoQuadrado.appendChild(resizeHandle);
 
-
-
-
-// Verifica se o evento ocorreu no objeto
-objeto.addEventListener("mousedown", function(event) {
-    if (event.target === objeto) { 
-        isDragging = true;
-        offsetX = event.clientX - objeto.getBoundingClientRect().left;
-        offsetY = event.clientY - objeto.getBoundingClientRect().top;
-    }
-});
-
-// ajustar local do objeto e enviar a informação 
-objeto.addEventListener("mousemove", function(event) {
-    if (isDragging) {
-        const x = event.clientX - offsetX;
-        const y = event.clientY - offsetY;
-        objeto.style.left = x + "px";
-        objeto.style.top = y + "px";
-        socket.emit('object move', roomNameInput.value, {
-            left: objeto.style.left,
-            top: objeto.style.top
+        novoQuadrado.addEventListener('click', () => {
+            console.log('ID do quadrado clicado: ' + novoQuadrado.id);
         });
-        console.log('estou enviando informação para move');
-        console.log('isMoving');
-    }
-});
 
-// soltar o objeto
-objeto.addEventListener("mouseup", function() {
-    isDragging = false;
+        quadradoContainer.appendChild(novoQuadrado);
+        tornarArrastavelERedimensionavel(novoQuadrado);
+    });
 });
 
 // escutando se o objeto mudou
-socket.on("object move", (left, top) => {
-    objeto.style.left = left;
-    objeto.style.top = top;
-    console.log('estou recebendo informação de objectMoved');
+socket.on("any object move", (left, top, elementID) => {
+    const elementoMovido = document.getElementById(elementID);
+    elementoMovido.style.left = left;
+    elementoMovido.style.top = top;
 });
+
+// Adicione um ouvinte de evento para receber o comando de exclusão
+socket.on('delete object', (elementID) => {
+    const elementoDeletado = document.getElementById(elementID);
+    if (elementoDeletado) {
+        elementoDeletado.remove();
+    }
+});
+
+// Define um ouvinte de evento para criar caixas
+socket.on('Create box', (quadradoID) => {
+    const novoQuadrado = document.createElement('div');
+    novoQuadrado.classList.add('quadrado');
+    contadorQuadrados = quadradoID
+    novoQuadrado.id = contadorQuadrados;
+
+    //cria o botão de excluir a caixa
+    criarBotaoExcluir(novoQuadrado);
+
+    
+
+    //parte de reesstruturar o tamanho
+    const resizeHandle = document.createElement('div');
+    resizeHandle.classList.add('resize-handle');
+    novoQuadrado.appendChild(resizeHandle);
+
+
+    //log para confirmar qual quadrado foi clicado
+    novoQuadrado.addEventListener('click', () => {
+        console.log('ID do quadrado clicado: ' + novoQuadrado.id);
+    });
+
+    quadradoContainer.appendChild(novoQuadrado);
+
+    tornarArrastavelERedimensionavel(novoQuadrado);
+    activeElement = null;
+});
+
+
+function criarBotaoExcluir(objeto) {
+    const botaoExcluir = document.createElement('button');
+    botaoExcluir.innerText = 'X';
+    botaoExcluir.classList.add('botao-excluir');
+
+    botaoExcluir.addEventListener('click', () => {
+        // Emite o evento "delete object" para o servidor
+        socket.emit('delete object', roomNameInput.value, objeto.id);
+    });
+
+    objeto.appendChild(botaoExcluir);
+}
+
+
+// código de any objeto
+
+function tornarArrastavelERedimensionavel(elemento) {
+    elemento.addEventListener('mousedown', (e) => {
+        const boundingBox = elemento.getBoundingClientRect();
+        const resizeHandleSize = 10;
+
+        if (
+            e.target === elemento && e.clientX >= boundingBox.right - resizeHandleSize &&
+            e.clientY >= boundingBox.bottom - resizeHandleSize
+        ) {
+            isResizing = true;
+            activeElement = elemento;
+            initialWidth = boundingBox.width;
+            initialHeight = boundingBox.height;
+        } else if (e.target === elemento) {
+            isDragging = true;
+            activeElement = elemento;
+            offsetX = e.clientX - boundingBox.left;
+            offsetY = e.clientY - boundingBox.top;
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+
+        if (isDragging) {
+            activeElement.style.left = e.clientX - offsetX + 'px';
+            activeElement.style.top = e.clientY - offsetY + 'px';
+
+            socket.emit('any object move', roomNameInput.value, {
+                left: activeElement.style.left,
+                top:activeElement.style.top,
+                elementID: activeElement.id,
+            }, socket.id);
+        } else if (isResizing) {
+            const newWidth = initialWidth + (e.clientX - activeElement.getBoundingClientRect().left) - (activeElement.getBoundingClientRect().left);
+            const newHeight = initialHeight + (e.clientY - activeElement.getBoundingClientRect().top) - (activeElement.getBoundingClientRect().top);
+            activeElement.style.width = newWidth + 'px';
+            activeElement.style.height = newHeight + 'px';
+            
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging == true){
+            socket.emit('save estate', roomNameInput.value, {
+                left: activeElement.style.left,
+                top:activeElement.style.top,
+                elementID: activeElement.id,
+            });
+        }
+        isDragging = false;
+        isResizing = false;
+        activeElement = null;
+
+
+    });
+
+    document.addEventListener('mouseleave', () => {
+        isDragging = false;
+        isResizing = false;
+        activeElement = null;
+    });
+
+
+
+    // código para atualizar tudo
+    socket.on('initial state', (initialMessages, initialObjects) => {
+        // Exibe as mensagens iniciais
+
+        initialMessages.forEach((message) => {
+            const messageElement = document.createElement('p');
+            messageElement.textContent = message;
+            messages.appendChild(messageElement);
+        });
+    
+        // Cria os objetos iniciais
+        initialObjects.forEach(({ color, elementID }) => {
+            const novoQuadrado = document.createElement('div');
+            novoQuadrado.classList.add('quadrado');
+            novoQuadrado.id = elementID;
+            novoQuadrado.style.left = left;
+            novoQuadrado.style.top = top;
+
+            criarBotaoExcluir(novoQuadrado);  // Adiciona o botão "X" para excluir
+    
+            const resizeHandle = document.createElement('div');
+            resizeHandle.classList.add('resize-handle');
+            novoQuadrado.appendChild(resizeHandle);
+    
+            novoQuadrado.addEventListener('click', () => {
+                console.log('ID do quadrado clicado: ' + novoQuadrado.id);
+            });
+    
+            quadradoContainer.appendChild(novoQuadrado);
+    
+            tornarArrastavelERedimensionavel(novoQuadrado);
+        });
+    });
+}

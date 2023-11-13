@@ -4,12 +4,13 @@
   "description": "Um exemplo de aplicação com Socket.IO para arrastar um objeto em tempo real.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "nodemon server.js"
   },
   "author": "Seu Nome",
   "license": "MIT",
   "dependencies": {
     "express": "^4.17.3",
-    "socket.io": "^4.0.1"
+    "socket.io": "^4.0.1",
+    "nodemon": "^2.0.12"
   }
 }

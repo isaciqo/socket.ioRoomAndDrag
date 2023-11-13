@@ -18,3 +18,14 @@
     right: 0;
     cursor: se-resize;
 }
+
+.botao-excluir {
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 4px;
+}
