@@ -1,3 +1,20 @@
+#container {
+    position: relative;
+    width: 1000px;
+    height: 600px;
+    border: 1px solid #000;
+}
+
+#area-restrita {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 1100px; /* largura da área restrita */
+    height: 500px; /* altura da área restrita */
+    border: 1px dashed #000;
+    overflow: hidden; /* oculta o que passar dos limites */
+}
+
 .quadrado {
     width: 100px;
     height: 100px;

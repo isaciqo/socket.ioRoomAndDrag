@@ -12,12 +12,19 @@
         <!-- Campo de entrada para o nome da sala -->
         <input id="roomName" type="text" placeholder="Nome da Sala">
         <button id="joinCreateRoom">Entrar na Sala ou Criar</button>
+        <input id="userId" type="text" placeholder="Nome do usuário">
+        <input id="userRole" type="text" placeholder="Qual a sua função?">
         <div id="messages"></div>
         <input id="message" type="text" placeholder="Digite sua mensagem">
         <button id="send">Enviar</button>
     </div>
     <button id="criarQuadrado">Criar Quadrado</button>
-    <div id="quadradoContainer"></div>
+    <div id="container">
+        <div id="area-restrita">
+            <div id="quadradoContainer"></div>
+        </div>
+    </div>
+    <!-- <div id="quadradoContainer"></div> -->
     
     <!-- Inclui o arquivo JavaScript do cliente -->
     <script src="/client.js"></script>
