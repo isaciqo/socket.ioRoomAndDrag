@@ -7,17 +7,25 @@
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
+
     <div id="chat">
         <h1>Crie ou entre em uma sala:</h1>
         <!-- Campo de entrada para o nome da sala -->
         <input id="roomName" type="text" placeholder="Nome da Sala">
-        <button id="joinCreateRoom">Entrar na Sala ou Criar</button>
+       
         <input id="userId" type="text" placeholder="Nome do usuário">
         <input id="userRole" type="text" placeholder="Qual a sua função?">
+        
+        <button id="joinCreateRoom">Entrar na Sala ou Criar</button>
+        
         <div id="messages"></div>
         <input id="message" type="text" placeholder="Digite sua mensagem">
         <button id="send">Enviar</button>
+        <input type="file" id="fileInput">
+
+
     </div>
+    
     <button id="criarQuadrado">Criar Quadrado</button>
     <div id="container">
         <div id="area-restrita">

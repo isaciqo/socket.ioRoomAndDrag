@@ -1,7 +1,7 @@
 #container {
     position: relative;
     width: 1000px;
-    height: 600px;
+    height: 500px;
     border: 1px solid #000;
 }
 
@@ -9,21 +9,23 @@
     position: absolute;
     top: 0px;
     left: 0px;
-    width: 1100px; /* largura da área restrita */
+    width: 1000px; /* largura da área restrita */
     height: 500px; /* altura da área restrita */
     border: 1px dashed #000;
     overflow: hidden; /* oculta o que passar dos limites */
+    background-size: contain;
 }
 
 .quadrado {
     width: 100px;
     height: 100px;
-    background-color: red;
+    background-color: blue;
     display: inline-block;
     position: absolute;
     cursor: move;
     resize: both;
     overflow: hidden;
+    background-size: contain;
 }
 
 .resize-handle {
@@ -46,3 +48,15 @@
     border: none;
     padding: 4px;
 }
+
+.upload-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+    background-color: rgb(0, 255, 98);
+    color: white;
+    border: none;
+    padding: 4px;
+    border-radius: 5px 0 0 5px; /* para dar um estilo no canto esquerdo do ícone */
+  }

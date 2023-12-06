@@ -16,15 +16,15 @@ io.on('connection', (socket) => {
         socket.join(room); // Coloca o usuário na sala especificada
 
         // Emite o evento 'initial state' com as mensagens e objetos iniciais
-        const roomData = rooms[room] || { messages: [], objects: [] };
-        socket.emit('console.log', roomData.messages, roomData.objects);
+        const roomData = rooms[room] || { messages: [], objects: [], imagens: []};
+        socket.emit('console.log', roomData.messages, roomData.objects, roomData.imagens);
     });
 
     // Ouvinte de evento para mensagens de chat
     socket.on('chat message', (room, message) => {
         // Envia a mensagem para todos os usuários na sala especificada
         // Garante que rooms[room] está inicializado antes de acessar messages
-        rooms[room] = rooms[room] || { messages: [], objects: [] };
+        rooms[room] = rooms[room] || { messages: [], objects: [], imagens: [] };
 
         
         io.to(room).emit('chat message', message);
@@ -36,7 +36,7 @@ io.on('connection', (socket) => {
     socket.on('Create box', (room, quadradoID) => {
 
          // Garante que rooms[room] está inicializado antes de acessar messages
-        rooms[room] = rooms[room] || { messages: [], objects: [] };
+        rooms[room] = rooms[room] || { messages: [], objects: [], imagens: [] };
         io.to(room).emit('Create box', quadradoID);
 
         rooms[room].objects.push({ elementID: quadradoID, position: { x: 0, y: 0 } });
@@ -66,6 +66,27 @@ io.on('connection', (socket) => {
     socket.on('any object move', (room, coordinates, userID) => {
         io.to(room).except(userID).emit('any object move', coordinates.left, coordinates.top, coordinates.elementID);
 
+    });
+
+    socket.on('any object Resizing', (room, size, userID) => {
+
+        io.to(room).except(userID).emit('any object Resizing', size.width, size.height, size.elementID);
+
+    });
+
+    // Ouvir evento para mudança da imagem de fundo
+    socket.on('changeBackground', (room, newBackground) => {
+        
+        rooms[room].imagens.push(newBackground);
+        // Emitir o evento para todos os clientes na sala
+        io.to(room).emit('backgroundChanged', newBackground);
+    });
+
+
+    // Ouvir evento para mudar a imagem do jogador
+    socket.on('uploadImage', (room, quadradoID, imageData) => {
+        // Aqui você pode salvar a imagem em algum lugar ou transmiti-la para outros clientes
+        io.to(room).emit('updateObjectImage', quadradoID, imageData);
     });
 
     // Ouvinte de evento para desconexão de um usuário

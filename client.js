@@ -7,11 +7,50 @@ const criarQuadradoBtn = document.getElementById('criarQuadrado');
 const quadradoContainer = document.getElementById('quadradoContainer');
 const userIdInput = document.getElementById('userId');
 const userRoleInput = document.getElementById('userRole');
+const fileInput = document.getElementById("fileInput"); 
 let contadorQuadrados = 0;
 let isDragging = false;
 let isResizing = false;
 let activeElement, offsetX, offsetY, initialWidth, initialHeight;
+const areaRestrita = document.getElementById("area-restrita");
+fileInput.disabled = true;
 
+document.addEventListener("DOMContentLoaded", function() {
+       
+  
+    fileInput.addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+  
+        reader.onload = function(event) {
+            // Emitir evento para o servidor informando a mudança da imagem de fundo
+            socket.emit('changeBackground', roomNameInput.value, event.target.result);
+        };
+  
+        reader.readAsDataURL(file);
+    });
+});
+
+// Escutar o evento de mudança de imagem de jogador
+socket.on('updateObjectImage', (quadradoID, imageData) => {
+
+    const objetoAtualizado = document.getElementById(quadradoID);
+    
+    if (objetoAtualizado) {
+        // Atualiza a imagem do objeto com a imagem carregada
+        // Aqui você pode usar o imageData para definir a imagem como plano de fundo do objeto, por exemplo
+        objetoAtualizado.style.backgroundImage = `url('${imageData}')`;
+    }
+});
+
+// Escutar o evento de mudança de imagem de fundo
+socket.on('backgroundChanged', (newBackground) => {
+    
+    areaRestrita.style.backgroundImage = `url('${newBackground}')`;
+    // Você pode adicionar outras lógicas aqui, se necessário
+});
+
+// ///////////////////
 
 let idsPlayerIcon = [];
 // Define um ouvinte de evento para o botão "Entrar na Sala ou Criar"
@@ -23,8 +62,13 @@ joinCreateRoomButton.addEventListener('click', () => {
         // Emite o evento "join" com o nome da sala
         socket.emit('join', roomName, userId);
         // Desativa o campo de entrada e o botão após entrar na sala
+        
         roomNameInput.disabled = true;
         joinCreateRoomButton.disabled = true;
+        if(userRoleInput.value.trim() == 'mestre'){
+            fileInput.disabled = false;
+        }
+        
         userIdInput.disabled = true; // Desativa o campo de entrada de ID após entrar na sala
     }
 });
@@ -68,7 +112,12 @@ socket.on('chat message', (message) => {
 });
 
 // Define um ouvinte de evento para receber mensagens do servidor e exibir o console.log
-socket.on('console.log', (initialMessages, initialObjects) => {
+socket.on('console.log', (initialMessages, initialObjects, initialImagens) => {
+    // Exibe as imagens iniciais
+    initialImagens.forEach((imagem) => {
+        areaRestrita.style.backgroundImage = `url('${imagem}')`;
+    });
+
     // Exibe as mensagens iniciais
     initialMessages.forEach((message) => {
         const messageElement = document.createElement('p');
@@ -83,6 +132,9 @@ socket.on('console.log', (initialMessages, initialObjects) => {
         novoQuadrado.id = contadorQuadrados;
         novoQuadrado.style.left = object.position.x;
         novoQuadrado.style.top = object.position.y;
+        novoQuadrado.style.backgroundImage = `url('${object.imagem}')`;
+        //cria o botão de upload a caixa
+        uploadImagem(novoQuadrado);
         criarBotaoExcluir(novoQuadrado);  // Adiciona o botão "X" para excluir
         const resizeHandle = document.createElement('div');
         resizeHandle.classList.add('resize-handle');
@@ -104,6 +156,16 @@ socket.on("any object move", (left, top, elementID) => {
     elementoMovido.style.top = top;
 });
 
+// escutando se o objeto mudou de tamanho
+socket.on("any object Resizing", (width, height, elementID) => {
+    
+    const elemento = document.getElementById(elementID);
+    const newWidth =  width - elemento.getBoundingClientRect().left
+    const newHeight =  height - elemento.getBoundingClientRect().top
+    elemento.style.width = newWidth + 'px';
+    elemento.style.height = newHeight + 'px';
+});
+
 // Adicione um ouvinte de evento para receber o comando de exclusão
 socket.on('delete object', (elementID) => {
     const elementoDeletado = document.getElementById(elementID);
@@ -119,16 +181,16 @@ socket.on('Create box', (quadradoID) => {
     contadorQuadrados = quadradoID
     novoQuadrado.id = contadorQuadrados;
 
+    //cria o botão de upload a caixa
+    uploadImagem(novoQuadrado);
+
     //cria o botão de excluir a caixa
     criarBotaoExcluir(novoQuadrado);
-
-    
 
     //parte de reesstruturar o tamanho
     const resizeHandle = document.createElement('div');
     resizeHandle.classList.add('resize-handle');
     novoQuadrado.appendChild(resizeHandle);
-
 
     //log para confirmar qual quadrado foi clicado
     novoQuadrado.addEventListener('click', () => {
@@ -155,6 +217,37 @@ function criarBotaoExcluir(objeto) {
     objeto.appendChild(botaoExcluir);
 }
 
+function uploadImagem(objeto) {
+    // Cria o botão de upload de imagem
+    const uploadImageButton = document.createElement('input');
+    uploadImageButton.type = 'file';
+    uploadImageButton.accept = 'image/*'; // Aceita apenas arquivos de imagem
+
+    // Adiciona um evento de mudança ao botão de upload de imagem
+    uploadImageButton.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+            // Emite um evento para o servidor com a imagem carregada
+            socket.emit('uploadImage', roomNameInput.value, contadorQuadrados, event.target.result);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Cria um ícone ou texto para ativar o botão de upload de imagem
+    const uploadIcon = document.createElement('div');
+    uploadIcon.innerText = 'U';
+    uploadIcon.classList.add('upload-icon'); // Estilize o ícone conforme necessário
+
+    // Adiciona um evento de clique ao ícone/texto para acionar o botão de upload de imagem
+    uploadIcon.addEventListener('click', () => {
+        uploadImageButton.click(); // Clique no botão de upload de imagem
+    });
+
+    // Adiciona o botão de upload de imagem e o ícone ao quadrado
+    objeto.appendChild(uploadIcon);
+}
 
 // código de any objeto
 
@@ -174,7 +267,7 @@ function tornarArrastavelERedimensionavel(elemento) {
         ) {
             isResizing = true;
             activeElement = elemento;
-            initialWidth = boundingBox.width;
+            initialWidth = activeElement.offsetWidth;
             initialHeight = boundingBox.height;
         } else if (e.target === elemento && (idsPlayerIcon.includes(parseInt(elemento.id)) || userRole == "mestre")) {
             isDragging = true;
@@ -207,10 +300,17 @@ function tornarArrastavelERedimensionavel(elemento) {
                 elementID: activeElement.id,
             }, socket.id);
         } else if (isResizing) {
-            const newWidth = initialWidth + (e.clientX - activeElement.getBoundingClientRect().left) - (activeElement.getBoundingClientRect().left);
-            const newHeight = initialHeight + (e.clientY - activeElement.getBoundingClientRect().top) - (activeElement.getBoundingClientRect().top);
+            const newWidth =  initialWidth + e.clientX - (offsetX);
+            const newHeight = initialHeight + e.clientY - offsetY;
+
+            
             activeElement.style.width = newWidth + 'px';
             activeElement.style.height = newHeight + 'px';
+            socket.emit('any object Resizing', roomNameInput.value, {
+                width: newWidth,
+                height: newHeight,
+                elementID: activeElement.id,
+            }, socket.id);
         }
     });
 
@@ -252,7 +352,8 @@ function tornarArrastavelERedimensionavel(elemento) {
             novoQuadrado.id = elementID;
             novoQuadrado.style.left = left;
             novoQuadrado.style.top = top;
-
+            //cria o botão de upload a caixa
+            uploadImagem(novoQuadrado);
             criarBotaoExcluir(novoQuadrado);  // Adiciona o botão "X" para excluir
     
             const resizeHandle = document.createElement('div');
