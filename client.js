@@ -126,6 +126,7 @@ socket.on('console.log', (initialMessages, initialObjects, initialImagens) => {
     });
     // Cria os objetos iniciais
     initialObjects.forEach(( object ) => {
+        console.log('----object-----------------------',object)
         contadorQuadrados = object.elementID;
         const novoQuadrado = document.createElement('div');
         novoQuadrado.classList.add('quadrado');
@@ -139,7 +140,8 @@ socket.on('console.log', (initialMessages, initialObjects, initialImagens) => {
         const resizeHandle = document.createElement('div');
         resizeHandle.classList.add('resize-handle');
         novoQuadrado.appendChild(resizeHandle);
-
+        novoQuadrado.style.width = object.size.width ;
+        novoQuadrado.style.height = object.size.height ;
         novoQuadrado.addEventListener('click', () => {
             console.log('ID do quadrado clicado: ' + novoQuadrado.id);
         });
@@ -162,6 +164,7 @@ socket.on("any object Resizing", (width, height, elementID) => {
     const elemento = document.getElementById(elementID);
     const newWidth =  width - elemento.getBoundingClientRect().left
     const newHeight =  height - elemento.getBoundingClientRect().top
+    console.log(elemento.getBoundingClientRect().left)
     elemento.style.width = newWidth + 'px';
     elemento.style.height = newHeight + 'px';
 });
@@ -315,10 +318,12 @@ function tornarArrastavelERedimensionavel(elemento) {
     });
 
     document.addEventListener('mouseup', () => {
-        if (isDragging) {
+        if (isDragging || isResizing) {
             socket.emit('save estate', roomNameInput.value, {
                 left: activeElement.style.left,
                 top: activeElement.style.top,
+                width: activeElement.style.width,
+                height: activeElement.style.height,
                 elementID: activeElement.id,
             });
         }

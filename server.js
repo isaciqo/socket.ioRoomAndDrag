@@ -43,9 +43,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on('save estate', (room, objectInformation) => {
-
+        console.log('---------------------------', objectInformation)
         rooms[room].objects = rooms[room].objects.map(object => 
-            object.elementID === parseInt(objectInformation.elementID) ? { ...object, position: { x: objectInformation.left, y: objectInformation.top } } : object
+            object.elementID === parseInt(objectInformation.elementID) ? { ...object, position: { x: objectInformation.left, y: objectInformation.top }, 
+            size: { width: objectInformation.width, height: objectInformation.height } 
+            } : object
           );
        
        
